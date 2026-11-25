@@ -1,3 +1,4 @@
+import { createMemoryHistory, createRootRoute, createRouter } from '@tanstack/react-router'
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { FeatureFlagContext } from 'common'
@@ -10,8 +11,8 @@ import { generateIssuesMenu } from '@/components/layouts/IssuesLayout/IssuesMenu
 import { ShortcutsReferenceSheet } from '@/components/ui/GlobalShortcuts/ShortcutsReferenceSheet'
 import type { ProductMenuGroup } from '@/components/ui/ProductMenu/ProductMenu.types'
 import { ProductMenuShortcuts } from '@/components/ui/ProductMenu/ProductMenuShortcuts'
+import { parseSearch, stringifySearch } from '@/lib/router-search-params'
 import { customRender } from '@/tests/lib/custom-render'
-import { routerMock } from '@/tests/lib/route-mock'
 
 const ShortcutHost = ({ menu }: { menu: ProductMenuGroup[] }) => {
   const [open, setOpen] = useState(false)
@@ -27,7 +28,13 @@ const ShortcutHost = ({ menu }: { menu: ProductMenuGroup[] }) => {
 it.each([false, true])(
   'shows and runs the active navigation shortcuts: %s',
   async (issuesInbox) => {
-    routerMock.setCurrentUrl(`/project/default/${issuesInbox ? 'issues' : 'advisors/security'}`)
+    const initialUrl = `/project/default/${issuesInbox ? 'issues' : 'advisors/security'}`
+    const router = createRouter({
+      routeTree: createRootRoute(),
+      history: createMemoryHistory({ initialEntries: [initialUrl] }),
+      parseSearch,
+      stringifySearch,
+    })
     const generateMenu = issuesInbox ? generateIssuesMenu : generateAdvisorsMenu
     const menu = generateMenu({
       ref: 'default',
@@ -39,7 +46,8 @@ it.each([false, true])(
     customRender(
       <FeatureFlagContext.Provider value={{ configcat: { issuesInbox }, posthog: {} }}>
         <ShortcutHost menu={menu} />
-      </FeatureFlagContext.Provider>
+      </FeatureFlagContext.Provider>,
+      { router }
     )
     await user.click(screen.getByRole('button', { name: 'Show shortcuts' }))
     expect(
@@ -59,7 +67,7 @@ it.each([false, true])(
     search.blur()
     await user.keyboard('vs')
     await waitFor(() =>
-      expect(routerMock.asPath).toBe(
+      expect(router.state.location.href).toBe(
         issuesInbox
           ? '/project/default/issues?category=security'
           : '/project/default/advisors/security'

@@ -1,6 +1,5 @@
-import { LOCAL_STORAGE_KEYS } from 'common'
+import { LOCAL_STORAGE_KEYS, useParams } from 'common'
 import dynamic from 'next/dynamic'
-import { useRouter } from 'next/router'
 import { parseAsString, useQueryState } from 'nuqs'
 import { useEffect, useEffectEvent, useRef, type PropsWithChildren } from 'react'
 
@@ -41,7 +40,7 @@ export const SIDEBAR_KEYS = {
 export type TYPEOF_SIDEBAR_KEYS = (typeof SIDEBAR_KEYS)[keyof typeof SIDEBAR_KEYS]
 
 export const LayoutSidebarProvider = ({ children }: PropsWithChildren) => {
-  const router = useRouter()
+  const { ref } = useParams()
   const { data: project } = useSelectedProjectQuery()
   const { data: org } = useSelectedOrganizationQuery()
   const track = useTrack()
@@ -51,11 +50,7 @@ export const LayoutSidebarProvider = ({ children }: PropsWithChildren) => {
   const [sidebarLocalStorage, setSidebarLocalStorage, { isSuccess: isLoadedLocalStorage }] =
     useLocalStorageQuery(LOCAL_STORAGE_KEYS.LAST_OPENED_SIDE_BAR(project?.ref ?? ''), '')
 
-  const supportLinkQueryParams = getSupportLinkQueryParams(
-    project,
-    org,
-    router.query.ref as string | undefined
-  )
+  const supportLinkQueryParams = getSupportLinkQueryParams(project, org, ref)
 
   const sidebarLocalStorageRef = useLatest(sidebarLocalStorage)
 
@@ -119,7 +114,7 @@ export const LayoutSidebarProvider = ({ children }: PropsWithChildren) => {
 
   // Prioritize URL params first, then local storage
   useEffect(() => {
-    if (router.isReady && isLoadedLocalStorage) {
+    if (isLoadedLocalStorage) {
       if (
         typeof sidebarURLParam === 'string' &&
         Object.values(SIDEBAR_KEYS).includes(
@@ -137,7 +132,7 @@ export const LayoutSidebarProvider = ({ children }: PropsWithChildren) => {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router.isReady, isLoadedLocalStorage, sidebarURLParam])
+  }, [isLoadedLocalStorage, sidebarURLParam])
 
   return <>{children}</>
 }

@@ -1,6 +1,5 @@
 import { useParams } from 'common'
 import { BoxesIcon } from 'lucide-react'
-import { useRouter } from 'next/router'
 import { useState } from 'react'
 import { Badge, cn } from 'ui'
 import { GenericSkeletonLoader, ShimmeringLoader } from 'ui-patterns/ShimmeringLoader'
@@ -15,6 +14,7 @@ import { useEmbeddedCloseHandler } from './useEmbeddedCloseHandler'
 import PartnerIcon from '@/components/ui/PartnerIcon'
 import { useOrganizationsQuery } from '@/data/organizations/organizations-query'
 import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
+import { useRoutePattern } from '@/hooks/misc/useRoutePattern'
 import { useSelectedOrganizationQuery } from '@/hooks/misc/useSelectedOrganization'
 import { useTrack } from '@/lib/telemetry/track'
 
@@ -29,7 +29,7 @@ export const OrganizationDropdown = ({
   className,
   onClose,
 }: OrganizationDropdownProps = {}) => {
-  const router = useRouter()
+  const routePattern = useRoutePattern()
   const { slug: routeSlug } = useParams()
   const { data: selectedOrganization } = useSelectedOrganizationQuery()
   const {
@@ -63,7 +63,7 @@ export const OrganizationDropdown = ({
       className={className}
       organizations={organizations ?? []}
       selectedSlug={slug}
-      routePathname={router.pathname}
+      routePathname={routePattern}
       hasRouteSlug={!!routeSlug}
       organizationCreationEnabled={organizationCreationEnabled}
       onClose={close}
