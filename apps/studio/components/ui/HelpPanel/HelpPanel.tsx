@@ -1,7 +1,6 @@
 import { IS_PLATFORM } from 'common'
 import { ChevronLeftIcon, XIcon } from 'lucide-react'
 import Image from 'next/image'
-import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import SVG from 'react-inlinesvg'
 import { Button } from 'ui'
@@ -16,6 +15,7 @@ import {
 } from '@/components/interfaces/Support/SupportSidebarForm'
 import { SIDEBAR_KEYS } from '@/components/layouts/ProjectLayout/LayoutSidebar/LayoutSidebarProvider'
 import { ButtonTooltip } from '@/components/ui/ButtonTooltip'
+import { BASE_PATH } from '@/lib/constants'
 import { useAiAssistantStateSnapshot } from '@/state/ai-assistant-state'
 import { helpPanelState } from '@/state/help-panel-state'
 import { useSidebarManagerSnapshot } from '@/state/sidebar-manager-state'
@@ -31,7 +31,6 @@ export const HelpPanel = ({
 }) => {
   const snap = useAiAssistantStateSnapshot()
   const { openSidebar, closeSidebar } = useSidebarManagerSnapshot()
-  const router = useRouter()
   const helpSnap = useSnapshot(helpPanelState)
   const [view, setView] = useState<'home' | 'support'>(() => helpPanelState.requestedView)
 
@@ -112,7 +111,7 @@ export const HelpPanel = ({
                   >
                     <Image
                       className="absolute left-0 top-0 opacity-50 transition-opacity group-hover:opacity-40"
-                      src={`${router.basePath}/img/support/discord-bg-small.jpg`}
+                      src={`${BASE_PATH}/img/support/discord-bg-small.jpg`}
                       layout="fill"
                       objectFit="cover"
                       alt="Discord illustration"
@@ -121,9 +120,7 @@ export const HelpPanel = ({
                       variant="secondary"
                       size="tiny"
                       className="bg-white hover:bg-white/90"
-                      icon={
-                        <SVG src={`${router.basePath}/img/discord-icon.svg`} className="h-4 w-4" />
-                      }
+                      icon={<SVG src={`${BASE_PATH}/img/discord-icon.svg`} className="h-4 w-4" />}
                     >
                       <span style={{ color: '#404EED' }}>Join us on Discord</span>
                     </Button>
