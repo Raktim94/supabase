@@ -10,32 +10,25 @@ import type { ResponseFailure } from '@/types'
 
 export type ApiMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD' | 'OPTIONS'
 
-export interface ApiHandlerContext<TParams = Record<string, string>> {
+export interface ApiHandlerContext {
   request: Request
-  params: TParams
+  params: Record<string, string | undefined>
   claims?: JwtPayload
 }
 
-export type ApiHandler<TParams = Record<string, string>> = (
-  ctx: ApiHandlerContext<TParams>
-) => Response | Promise<Response>
+export type ApiHandler = (ctx: ApiHandlerContext) => Response | Promise<Response>
 
-export type ApiMethodHandlers<TParams = Record<string, string>> = Partial<
-  Record<ApiMethod, ApiHandler<TParams>>
->
+export type ApiMethodHandlers = Partial<Record<ApiMethod, ApiHandler>>
 
-type ServerRouteHandler<TParams = Record<string, string>> = (ctx: {
+type ServerRouteHandler = (ctx: {
   request: Request
-  params?: TParams
+  params?: Record<string, string | undefined>
 }) => Promise<Response>
 
-export type WrappedApiHandlers<
-  THandlers extends ApiMethodHandlers<TParams>,
-  TParams = Record<string, string>,
-> = {
-  [K in keyof THandlers & ApiMethod]: ServerRouteHandler<TParams>
+export type WrappedApiHandlers<THandlers extends ApiMethodHandlers> = {
+  [K in keyof THandlers & ApiMethod]: ServerRouteHandler
 } & {
-  ANY: ServerRouteHandler<TParams>
+  ANY: ServerRouteHandler
 }
 
 export function isResponseOk<T>(response: T | ResponseFailure | undefined): response is T {
@@ -59,19 +52,19 @@ export function isResponseOk<T>(response: T | ResponseFailure | undefined): resp
  * malformed-JSON 400 handling, Sentry error reporting, and an `ANY` fallback that returns
  * 405 Method Not Allowed with an `Allow` header derived from the registered methods.
  */
-export function createApiHandlers<
-  TParams extends Record<string, string> = Record<string, string>,
-  THandlers extends ApiMethodHandlers<TParams> = ApiMethodHandlers<TParams>,
->(handlers: THandlers, options?: { withAuth?: boolean }): WrappedApiHandlers<THandlers, TParams> {
+export function createApiHandlers<THandlers extends ApiMethodHandlers>(
+  handlers: THandlers,
+  options?: { withAuth?: boolean }
+): WrappedApiHandlers<THandlers> {
   const allowedMethods = (Object.keys(handlers) as ApiMethod[]).filter(
     (method) => handlers[method] !== undefined
   )
 
-  const wrapped: Partial<Record<ApiMethod | 'ANY', ServerRouteHandler<TParams>>> = {}
+  const wrapped: Partial<Record<ApiMethod | 'ANY', ServerRouteHandler>> = {}
 
   for (const method of allowedMethods) {
     const handler = handlers[method]!
-    wrapped[method] = async ({ request, params = {} as TParams }) => {
+    wrapped[method] = async ({ request, params = {} }) => {
       try {
         let claims: JwtPayload | undefined
 
@@ -99,7 +92,7 @@ export function createApiHandlers<
 
   wrapped.ANY = async ({ request }) => methodNotAllowed(request, allowedMethods)
 
-  return wrapped as WrappedApiHandlers<THandlers, TParams>
+  return wrapped as WrappedApiHandlers<THandlers>
 }
 
 // Purpose of this apiWrapper is to function like a global catchall for ANY errors

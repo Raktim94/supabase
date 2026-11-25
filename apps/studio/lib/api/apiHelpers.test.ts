@@ -6,6 +6,7 @@ import {
   constructHeaders,
   fromNodeHeaders,
   getBearerToken,
+  getPgMetaRedirectUrl,
   InvalidJsonError,
   methodNotAllowed,
   parseJsonBody,
@@ -15,6 +16,7 @@ import {
 
 vi.mock('@/lib/constants', () => ({
   IS_PLATFORM: false,
+  PG_META_URL: 'http://meta:8080',
 }))
 
 describe('apiHelpers', () => {
@@ -374,6 +376,22 @@ describe('apiHelpers', () => {
         data: null,
         error: { message: 'Method PUT Not Allowed' },
       })
+    })
+  })
+
+  describe('getPgMetaRedirectUrl', () => {
+    it('builds the pg-meta URL without query params when none are present', () => {
+      const request = new Request('http://localhost/api/platform/pg-meta/default/tables')
+      expect(getPgMetaRedirectUrl(request, 'tables')).toBe('http://meta:8080/tables')
+    })
+
+    it('forwards search parameters including repeated keys', () => {
+      const request = new Request(
+        'http://localhost/api/platform/pg-meta/default/tables?included_schemas=public&included_schemas=auth'
+      )
+      expect(getPgMetaRedirectUrl(request, 'tables')).toBe(
+        'http://meta:8080/tables?included_schemas=public&included_schemas=auth'
+      )
     })
   })
 })
