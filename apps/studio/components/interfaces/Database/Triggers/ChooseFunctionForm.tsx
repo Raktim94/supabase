@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
+import { useNavigate } from '@tanstack/react-router'
 import { useParams } from 'common'
 import { map as lodashMap, uniqBy } from 'lodash'
 import { HelpCircleIcon, TerminalIcon } from 'lucide-react'
 import Link from 'next/link'
-import { useRouter } from 'next/router'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, Button, SidePanel } from 'ui'
 
 import ProductEmptyState from '@/components/to-be-cleaned/ProductEmptyState'
@@ -15,6 +15,7 @@ import {
 } from '@/data/database-functions/database-functions-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { useGrant } from '@/lib/grants'
+import { navigateToUrl } from '@/lib/navigation'
 
 export interface ChooseFunctionFormProps {
   visible: boolean
@@ -98,15 +99,15 @@ const NoticeBox = () => {
 
 const NoFunctionsState = () => {
   // for the empty 'no tables' state link
-  const router = useRouter()
-  const { ref } = router.query
+  const navigate = useNavigate()
+  const { ref } = useParams()
 
   return (
     <ProductEmptyState
       title="No Trigger Functions found in database"
       ctaButtonLabel="Create a trigger function"
       onClickCta={() => {
-        router.push(`/project/${ref}/database/functions`)
+        void navigateToUrl(navigate, `/project/${ref}/database/functions`)
       }}
     >
       <p className="text-sm text-foreground-light">

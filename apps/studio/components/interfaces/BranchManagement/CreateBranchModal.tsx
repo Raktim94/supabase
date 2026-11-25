@@ -1,11 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useNavigate } from '@tanstack/react-router'
 import { useDebounce } from '@uidotdev/usehooks'
 import { useFlag, useParams } from 'common'
 import { CheckIcon, DatabaseZapIcon, DollarSignIcon, GitMergeIcon, Loader2Icon } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useRouter } from 'next/router'
 import { useCallback, useEffect, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -65,7 +65,7 @@ import { useAppStateSnapshot } from '@/state/app-state'
 
 export const CreateBranchModal = () => {
   const { ref } = useParams()
-  const router = useRouter()
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { data: projectDetails } = useSelectedProjectQuery()
   const { data: selectedOrg } = useSelectedOrganizationQuery()
@@ -198,7 +198,7 @@ export const CreateBranchModal = () => {
       })
 
       setShowCreateBranchModal(false)
-      router.push(`/project/${data.project_ref}`)
+      void navigate({ to: '/project/$ref', params: { ref: data.project_ref } })
     },
     onError: (error) => {
       toast.error(`Failed to create branch: ${error.message}`)
