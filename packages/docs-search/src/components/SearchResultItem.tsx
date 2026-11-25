@@ -30,6 +30,7 @@ export function SearchResultItem({
 }: SearchResultItemProps) {
   // clicks navigate via the link and also fire onSelect, so onSelect only navigates for Enter
   const isPointerSelectRef = useRef(false)
+  const href = result.anchor ? `${result.path}#${result.anchor}` : result.path
 
   function handleLinkClick(event: MouseEvent<HTMLAnchorElement>) {
     isPointerSelectRef.current = true
@@ -43,18 +44,18 @@ export function SearchResultItem({
       isPointerSelectRef.current = false
       return
     }
-    onNavigate(result.path)
+    onNavigate(href)
   }
 
   return (
     <CommandItem
       asChild
-      value={result.path}
+      value={href}
       onSelect={handleSelect}
       className="cursor-pointer rounded-md px-2 py-2"
     >
       {renderLink({
-        href: result.path,
+        href,
         tabIndex: -1,
         onClick: handleLinkClick,
         children: (
