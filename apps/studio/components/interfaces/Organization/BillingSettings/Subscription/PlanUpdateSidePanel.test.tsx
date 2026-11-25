@@ -22,13 +22,6 @@ vi.mock('common', async (importOriginal) => {
   }
 })
 
-vi.mock('next/router', () => ({
-  useRouter: () => ({
-    pathname: '/org/[slug]/billing',
-    query: {},
-  }),
-}))
-
 const render = (ui: React.ReactElement) =>
   customRender(ui, { nuqs: { searchParams: '?panel=subscriptionPlan' } })
 

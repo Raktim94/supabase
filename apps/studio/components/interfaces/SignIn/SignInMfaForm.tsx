@@ -1,11 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import type { Factor } from '@supabase/supabase-js'
 import { useQueryClient } from '@tanstack/react-query'
-import { useLocation } from '@tanstack/react-router'
+import { type AnyRouter, useLocation, useNavigate } from '@tanstack/react-router'
 import { useAuthError, useFlag, useParams } from 'common'
 import { LockIcon } from 'lucide-react'
 import Link from 'next/link'
-import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import { SubmitHandler, useForm, useWatch } from 'react-hook-form'
 import { Button, Form, FormControl, FormField, Input } from 'ui'
@@ -25,6 +24,7 @@ import { useMfaListFactorsQuery } from '@/data/profile/mfa-list-factors-query'
 import { useRecoveryCodesStatusQuery } from '@/data/recovery-codes/recovery-codes-status-query'
 import { useSignOut } from '@/lib/auth'
 import { getReturnToPath } from '@/lib/gotrue'
+import { navigateToUrl } from '@/lib/navigation'
 import { useTrack } from '@/lib/telemetry/track'
 
 const schema = z.object({
@@ -38,7 +38,7 @@ interface SignInMfaFormProps {
 }
 
 export const SignInMfaForm = ({ context = 'sign-in' }: SignInMfaFormProps) => {
-  const router = useRouter()
+  const navigate = useNavigate()
   const signOut = useSignOut()
   const queryClient = useQueryClient()
   const searchStr = useLocation({ select: (location) => location.searchStr })
@@ -84,19 +84,19 @@ export const SignInMfaForm = ({ context = 'sign-in' }: SignInMfaFormProps) => {
       await queryClient.resetQueries()
 
       if (context === 'forgot-password') {
-        router.push({
-          pathname: '/reset-password',
-          query: router.query,
+        navigate<AnyRouter, string>({
+          to: '/reset-password',
+          search: (prev: Record<string, unknown>) => prev,
         })
       } else {
-        router.push(getReturnToPath())
+        navigateToUrl(navigate, getReturnToPath())
       }
     },
   })
 
   const onClickLogout = async () => {
     await signOut()
-    await router.replace('/sign-in')
+    await navigate({ to: '/sign-in', replace: true })
   }
 
   const onSubmit: SubmitHandler<z.infer<typeof schema>> = async ({ code }) => {
@@ -109,13 +109,13 @@ export const SignInMfaForm = ({ context = 'sign-in' }: SignInMfaFormProps) => {
     if (isSuccessFactors) {
       // if the user wanders into this page and he has no MFA setup, send the user to the next screen
       if (factors.totp.length === 0) {
-        queryClient.resetQueries().then(() => router.push(getReturnToPath()))
+        queryClient.resetQueries().then(() => navigateToUrl(navigate, getReturnToPath()))
       }
       if (factors.totp.length > 0) {
         setSelectedFactor(factors.totp[0])
       }
     }
-  }, [factors?.totp, isSuccessFactors, router, queryClient])
+  }, [factors?.totp, isSuccessFactors, navigate, queryClient])
 
   useEffect(() => {
     if (code.length === 6) form.handleSubmit(onSubmit)()

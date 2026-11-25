@@ -1,8 +1,8 @@
 import { OAuthScope } from '@supabase/shared-types/out/constants'
+import { useNavigate } from '@tanstack/react-router'
 import { useParams } from 'common'
 import { CheckCircle2Icon, ChevronRightIcon, ChevronsLeftRightIcon } from 'lucide-react'
 import Image from 'next/image'
-import { useRouter } from 'next/router'
 import { toast } from 'sonner'
 import { Button, cn, Collapsible, CollapsibleContent, CollapsibleTrigger } from 'ui'
 import { Admonition } from 'ui-patterns/Admonition'
@@ -29,7 +29,7 @@ export const ProjectClaimConfirm = ({
   requester: ApiAuthorizationResponse
   setStep: (step: 'choose-org' | 'benefits' | 'confirm') => void
 }) => {
-  const router = useRouter()
+  const navigate = useNavigate()
   const { auth_id, token: claimToken } = useParams()
   const { invalidateProjectsQuery } = useInvalidateProjectsInfiniteQuery()
 
@@ -55,7 +55,7 @@ export const ProjectClaimConfirm = ({
       } catch {
         // invalidate the org projects to force them to be refetched
         await invalidateProjectsQuery()
-        router.push(`/org/${selectedOrganization.slug}`)
+        navigate({ to: '/org/$slug', params: { slug: selectedOrganization.slug } })
       }
     } catch (error: any) {
       toast.error(`Failed to claim project ${error.message}`)

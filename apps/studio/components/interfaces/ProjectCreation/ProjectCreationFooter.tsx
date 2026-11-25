@@ -1,5 +1,5 @@
+import { useNavigate } from '@tanstack/react-router'
 import { useFlag } from 'common'
-import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 import {
@@ -50,7 +50,7 @@ export const ProjectCreationFooter = ({
   isLoadingAvailableRegions = false,
   cancelAction = 'studio',
 }: ProjectCreationFooterProps) => {
-  const router = useRouter()
+  const navigate = useNavigate()
   const { data: currentOrg } = useSelectedOrganizationQuery()
   const isFreePlan = currentOrg?.plan?.id === 'free'
   const { lastVisitedOrganization } = useLastVisitedOrganization()
@@ -93,8 +93,11 @@ export const ProjectCreationFooter = ({
       return
     }
 
-    if (!!lastVisitedOrganization) router.push(`/org/${lastVisitedOrganization}`)
-    else router.push('/organizations')
+    if (!!lastVisitedOrganization) {
+      navigate({ to: '/org/$slug', params: { slug: lastVisitedOrganization } })
+    } else {
+      navigate({ to: '/organizations' })
+    }
   }
 
   useEffect(() => {
