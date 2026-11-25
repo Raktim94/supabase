@@ -1,4 +1,5 @@
 import type { DocsSearchV2Result } from 'common/hooks/useDocsSearchV2'
+import { slug as slugHeading } from 'github-slugger'
 
 import { BASE_PATH } from './constants'
 
@@ -31,6 +32,7 @@ export function reshapeKbResult(row: unknown): DocsSearchV2Result | null {
     return null
 
   const title = row.title as string
+  const heading = row.heading as string
   const headingPath =
     'headingPath' in row && Array.isArray(row.headingPath) && row.headingPath.length > 0
       ? (row.headingPath as string[])
@@ -39,8 +41,10 @@ export function reshapeKbResult(row: unknown): DocsSearchV2Result | null {
   return {
     // origin is dropped so previews and local runs link to themselves, not to production
     path: new URL(row.href, 'https://supabase.com').pathname,
+    // a title match is the h1. An intro match has no heading
+    anchor: heading && heading !== title ? slugHeading(heading) : undefined,
     title,
-    heading: row.heading as string,
+    heading,
     excerpt: row.excerpt as string,
     headingPath,
     score: row.score as number,

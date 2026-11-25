@@ -15,6 +15,7 @@ describe('reshapeKbResult', () => {
   it('maps an api/search row to a search result with a site-relative path', () => {
     expect(reshapeKbResult(row)).toEqual({
       path: '/kb/guides/migrate-from-neon',
+      anchor: 'export-your-data',
       title: row.title,
       heading: row.heading,
       excerpt: row.excerpt,
@@ -34,6 +35,11 @@ describe('reshapeKbResult', () => {
   it('falls back to the page title when there is no heading path', () => {
     expect(reshapeKbResult({ ...row, headingPath: [] })?.headingPath).toEqual([row.title])
     expect(reshapeKbResult({ ...row, headingPath: undefined })?.headingPath).toEqual([row.title])
+  })
+
+  it('links the page top when the match is the title or the intro', () => {
+    expect(reshapeKbResult({ ...row, heading: row.title })?.anchor).toBeUndefined()
+    expect(reshapeKbResult({ ...row, heading: '' })?.anchor).toBeUndefined()
   })
 
   it('drops rows that are not search results', () => {
