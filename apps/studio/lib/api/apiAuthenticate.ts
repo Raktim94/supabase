@@ -1,47 +1,6 @@
 import type { JwtPayload } from '@supabase/supabase-js'
-import type { NextApiRequest, NextApiResponse } from 'next'
 
 import { getUserClaims } from '@/lib/gotrue'
-
-/**
- * Authenticate an incoming Web Request using its Authorization header.
- * This method can only be used from the server side.
- */
-export async function authenticateRequest(
-  request: Request
-): Promise<JwtPayload | { error: Error }> {
-  try {
-    return await fetchUserClaimsFromHeader(request.headers.get('authorization'))
-  } catch (error) {
-    return { error: error as Error }
-  }
-}
-
-/**
- * Use this method on api routes to check if user is authenticated and having required permissions.
- * This method can only be used from the server side.
- * Member permission is mandatory whenever orgSlug/projectRef query param exists
- * @param {NextApiRequest}    req
- * @param {NextApiResponse}   _res
- *
- * @returns {Object<user, error, description>}
- *   user null, with error and description if not authenticated or not enough permissions
- */
-export async function apiAuthenticate(
-  req: NextApiRequest,
-  _res: NextApiResponse
-): Promise<JwtPayload | { error: Error }> {
-  try {
-    const claims = await fetchUserClaims(req)
-    if (!claims) {
-      return { error: new Error('The user does not exist') }
-    }
-
-    return claims
-  } catch (error) {
-    return { error: error as Error }
-  }
-}
 
 async function fetchUserClaimsFromHeader(
   authorization: string | null | undefined
@@ -63,9 +22,15 @@ async function fetchUserClaimsFromHeader(
 }
 
 /**
- * @returns
- *  user with only id prop or detail object. It depends on requireUserDetail config
+ * Authenticate an incoming Web Request using its Authorization header.
+ * This method can only be used from the server side.
  */
-export async function fetchUserClaims(req: NextApiRequest): Promise<JwtPayload> {
-  return fetchUserClaimsFromHeader(req.headers.authorization)
+export async function authenticateRequest(
+  request: Request
+): Promise<JwtPayload | { error: Error }> {
+  try {
+    return await fetchUserClaimsFromHeader(request.headers.get('authorization'))
+  } catch (error) {
+    return { error: error as Error }
+  }
 }
