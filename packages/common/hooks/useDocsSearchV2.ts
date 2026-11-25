@@ -150,5 +150,5 @@ const useDocsSearchV2 = ({ endpoint, reshape = reshapeResult }: UseDocsSearchV2O
   }
 }
 
-export { useDocsSearchV2 }
+export { reshapeResult as reshapeDocsSearchV2Row, useDocsSearchV2 }
 export type { DocsSearchV2Result, UseDocsSearchV2Options, SearchState as DocsSearchV2State }
